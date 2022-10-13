@@ -8,7 +8,7 @@ import logging
 from collections import defaultdict
 from tqdm import tqdm
 from torch.autograd import Variable
-from tools import *
+from tool import *
 
 class Trainer:
     def __init__(self, data_loaders, dataset, parameter):
