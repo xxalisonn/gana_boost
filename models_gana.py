@@ -147,6 +147,7 @@ class MetaR(nn.Module):
         self.rel_similarity_cos = dict()
         self.rel_similarity_dist = dict()
         self.hyper_similarity_cos = dict()
+        self.hyper_similarity_dist = dict()
 
 
     def neighbor_encoder(self, connections, num_neighbors, istest):
