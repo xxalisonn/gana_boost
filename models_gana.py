@@ -142,6 +142,11 @@ class MetaR(nn.Module):
         self.loss_func = nn.MarginRankingLoss(self.margin)
         self.rel_q_sharing = dict()
         self.norm_q_sharing = dict()
+        self.rel_sharing = dict()
+        self.hyper_sharing = dict()
+        self.rel_similarity_cos = dict()
+        self.rel_similarity_dist = dict()
+        self.hyper_similarity_cos = dict()
 
 
     def neighbor_encoder(self, connections, num_neighbors, istest):
@@ -179,7 +184,31 @@ class MetaR(nn.Module):
                                 negative[:, :, 1, :]], 1).unsqueeze(2)
         return pos_neg_e1, pos_neg_e2
 
+   def get_rel_sim(self):
+        for key in self.rel_sharing.keys():
+            self.rel_similarity_cos[key] = dict()
+            for _ in self.rel_sharing.keys():
+                if _ != key:
+                    sim_cos = torch.cosine_similarity(self.rel_sharing[key],self.rel_sharing[_],dim=0)
+                    self.rel_similarity_cos[key][_] = sim_cos
+                    # sim_dist = torch.dist(self.rel_sharing[key],self.rel_sharing[_],p=1)
+                    # self.rel_similarity_dist[key][_] = sim_dist
 
+        return self.rel_similarity_cos,self.rel_similarity_dist
+    
+    def get_hyper_sim(self):
+        for key in self.hyper_sharing.keys():
+            self.hyper_similarity_cos[key] = dict()
+#             self.hyper_similarity_dist[key] = dict()
+            for _ in self.hyper_sharing.keys():
+                if _ != key:
+                    sim_cos = torch.cosine_similarity(self.rel_sharing[key],self.rel_sharing[_],dim=0)
+                    self.hyper_similarity_cos[key][_] = sim_cos
+                    # sim_dist = torch.dist(self.rel_sharing[key],self.rel_sharing[_],p=1)
+                    # self.hyper_similarity_cos[key][_] = sim_dist
+
+        return self.hyper_similarity_cos,self.hyper_similarity_dist
+    
     def forward(self, task, iseval=False, curr_rel='', support_meta=None, istest=False):
         # transfer task string into embedding
         support, support_negative, query, negative = [self.embedding(t) for t in task]
@@ -205,6 +234,10 @@ class MetaR(nn.Module):
         support_few = support_few.view(support_few.shape[0], self.few, 2, self.embed_dim)
         rel = self.relation_learner(support_few)
         rel.retain_grad()
+        if not iseval:
+            for i in range(len(curr_rel)):
+                temp = torch.squeeze(rel[i])
+                self.rel_sharing[curr_rel[i]] = temp
 
         # relation for support
         rel_s = rel.expand(-1, few+num_sn, -1, -1)
@@ -238,6 +271,11 @@ class MetaR(nn.Module):
         que_neg_e1, que_neg_e2 = self.split_concat(query, negative)  # [bs, nq+nn, 1, es]
         if iseval:
             norm_q = self.h_norm
+        if not iseval:
+            for i in range(len(curr_rel)):
+                temp = torch.squeeze(norm_q[i])
+                self.hyper_sharing[curr_rel[i]] = temp
+                
         p_score, n_score = self.embedding_learner(que_neg_e1, que_neg_e2, rel_q, num_q, norm_q)
 
         return p_score, n_score
