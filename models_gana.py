@@ -183,8 +183,8 @@ class MetaR(nn.Module):
         pos_neg_e2 = torch.cat([positive[:, :, 1, :],
                                 negative[:, :, 1, :]], 1).unsqueeze(2)
         return pos_neg_e1, pos_neg_e2
-
-   def get_rel_sim(self):
+    
+    def get_rel_sim(self):
         for key in self.rel_sharing.keys():
             self.rel_similarity_cos[key] = dict()
             for _ in self.rel_sharing.keys():
