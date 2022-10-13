@@ -11,4 +11,4 @@ def save_dic_tensor(json_name, save_name):
             json_name[key][_] = json_name[key][_].tolist()
     di = json.dumps(json_name,sort_keys=False,indent=4,separators=(',',':'))
     with open('./state/'+str(save_name)+'.json','w') as f:
-        f.write(di).
+        f.write(di)
