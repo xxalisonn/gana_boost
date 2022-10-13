@@ -8,7 +8,7 @@ import logging
 from collections import defaultdict
 from tqdm import tqdm
 from torch.autograd import Variable
-
+from tools import *
 
 class Trainer:
     def __init__(self, data_loaders, dataset, parameter):
@@ -300,6 +300,11 @@ class Trainer:
             if e % self.checkpoint_epoch == 0 and e != 0:
                 print('Epoch  {} has finished, saving...'.format(e))
                 self.save_checkpoint(e)
+            if e % 1500 == 0 and e != 0:
+                cos, dist = self.metaR.get_rel_sim()
+                hyper = self.metaR.get_hyper_sim()
+                save_dic_tensor(cos,'cos_'+str(e))
+                save_dic_tensor(hyper,'hyper_'+str(e))
             # do evaluation on specific epoch
             if e % self.eval_epoch == 0 and e != 0:
                 print('Epoch  {} has finished, validating...'.format(e))
