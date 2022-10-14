@@ -203,9 +203,9 @@ class MetaR(nn.Module):
 #             self.hyper_similarity_dist[key] = dict()
             for _ in self.hyper_sharing.keys():
                 if _ != key:
-                    sim_cos = torch.cosine_similarity(self.rel_sharing[key],self.rel_sharing[_],dim=0)
+                    sim_cos = torch.cosine_similarity(self.hyper_sharing[key],self.hyper_sharing[_],dim=0)
                     self.hyper_similarity_cos[key][_] = sim_cos
-                    # sim_dist = torch.dist(self.rel_sharing[key],self.rel_sharing[_],p=1)
+                    # sim_dist = torch.dist(self.hyper_sharing[key],self.hyper_sharing[_],p=1)
                     # self.hyper_similarity_cos[key][_] = sim_dist
 
         return self.hyper_similarity_cos,self.hyper_similarity_dist
