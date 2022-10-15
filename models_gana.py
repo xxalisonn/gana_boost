@@ -185,30 +185,30 @@ class MetaR(nn.Module):
                                 negative[:, :, 1, :]], 1).unsqueeze(2)
         return pos_neg_e1, pos_neg_e2
     
+    def get_hyper_sim(self):
+        for key in self.hyper_sharing.keys():
+            self.hyper_similarity_cos[key] = dict()
+            self.hyper_similarity_dist[key] = dict()
+            for _ in self.hyper_sharing.keys():
+                if _ != key:
+                    sim_cos = torch.cosine_similarity(self.hyper_sharing[key], self.hyper_sharing[_], dim=0)
+                    self.hyper_similarity_cos[key][_] = sim_cos
+                    sim_dist = torch.dist(self.hyper_sharing[key],self.hyper_sharing[_],p=1)
+                    self.hyper_similarity_dist[key][_] = sim_dist
+        return self.hyper_similarity_cos, self.hyper_similarity_dist
+
     def get_rel_sim(self):
         for key in self.rel_sharing.keys():
             self.rel_similarity_cos[key] = dict()
+            self.rel_similarity_dist[key] = dict()
             for _ in self.rel_sharing.keys():
                 if _ != key:
                     sim_cos = torch.cosine_similarity(self.rel_sharing[key],self.rel_sharing[_],dim=0)
                     self.rel_similarity_cos[key][_] = sim_cos
-                    # sim_dist = torch.dist(self.rel_sharing[key],self.rel_sharing[_],p=1)
-                    # self.rel_similarity_dist[key][_] = sim_dist
+                    sim_dist = torch.dist(self.rel_sharing[key],self.rel_sharing[_],p=1)
+                    self.rel_similarity_dist[key][_] = sim_dist
 
         return self.rel_similarity_cos,self.rel_similarity_dist
-    
-    def get_hyper_sim(self):
-        for key in self.hyper_sharing.keys():
-            self.hyper_similarity_cos[key] = dict()
-#             self.hyper_similarity_dist[key] = dict()
-            for _ in self.hyper_sharing.keys():
-                if _ != key:
-                    sim_cos = torch.cosine_similarity(self.hyper_sharing[key],self.hyper_sharing[_],dim=0)
-                    self.hyper_similarity_cos[key][_] = sim_cos
-                    # sim_dist = torch.dist(self.hyper_sharing[key],self.hyper_sharing[_],p=1)
-                    # self.hyper_similarity_cos[key][_] = sim_dist
-
-        return self.hyper_similarity_cos,self.hyper_similarity_dist
     
     def forward(self, task, iseval=False, curr_rel='', support_meta=None, istest=False):
         # transfer task string into embedding
