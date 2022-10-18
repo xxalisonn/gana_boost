@@ -141,13 +141,21 @@ class MetaR(nn.Module):
         self.embedding_learner = EmbeddingLearner()
         self.loss_func = nn.MarginRankingLoss(self.margin)
         self.rel_q_sharing = dict()
-        self.norm_q_sharing = dict()
+        
         self.rel_sharing = dict()
+        self.rela_q_sharing = dict()
         self.hyper_sharing = dict()
+        self.hyper_q_sharing = dict()
+        
         self.rel_similarity_cos = dict()
         self.rel_similarity_dist = dict()
         self.hyper_similarity_cos = dict()
         self.hyper_similarity_dist = dict()
+        
+        self.rel_q_similarity_cos = dict()
+        self.rel_q_similarity_dist = dict()
+        self.hyper_q_similarity_cos = dict()
+        self.hyper_q_similarity_dist = dict()
 
 
     def neighbor_encoder(self, connections, num_neighbors, istest):
@@ -188,27 +196,35 @@ class MetaR(nn.Module):
     def get_hyper_sim(self):
         for key in self.hyper_sharing.keys():
             self.hyper_similarity_cos[key] = dict()
-            self.hyper_similarity_dist[key] = dict()
+#             self.hyper_similarity_dist[key] = dict()
+            self.hyper_q_similarity_cos[key] = dict()
             for _ in self.hyper_sharing.keys():
                 if _ != key:
                     sim_cos = torch.cosine_similarity(self.hyper_sharing[key], self.hyper_sharing[_], dim=0)
                     self.hyper_similarity_cos[key][_] = sim_cos
-                    sim_dist = torch.dist(self.hyper_sharing[key],self.hyper_sharing[_],p=1)
-                    self.hyper_similarity_dist[key][_] = sim_dist
-        return self.hyper_similarity_cos, self.hyper_similarity_dist
+                    sim_cos_ = torch.cosine_similarity(self.hyper_q_sharing[key], self.hyper_q_sharing[_], dim=0)
+                    self.hyper_q_similarity_cos[key][_] = sim_cos_
+#                     sim_dist = torch.dist(self.hyper_sharing[key],self.hyper_sharing[_],p=1)
+#                     self.hyper_similarity_dist[key][_] = sim_dist
+#         return self.hyper_similarity_cos, self.hyper_similarity_dist
+        return self.hyper_similarity_cos, self.hyper_q_similarity_cos
 
     def get_rel_sim(self):
         for key in self.rel_sharing.keys():
             self.rel_similarity_cos[key] = dict()
-            self.rel_similarity_dist[key] = dict()
+#             self.rel_similarity_dist[key] = dict()
+            self.rel_q_similarity_cos[key] = dict()
             for _ in self.rel_sharing.keys():
                 if _ != key:
                     sim_cos = torch.cosine_similarity(self.rel_sharing[key],self.rel_sharing[_],dim=0)
                     self.rel_similarity_cos[key][_] = sim_cos
-                    sim_dist = torch.dist(self.rel_sharing[key],self.rel_sharing[_],p=1)
-                    self.rel_similarity_dist[key][_] = sim_dist
+#                     sim_dist = torch.dist(self.rel_sharing[key],self.rel_sharing[_],p=1)
+#                     self.rel_similarity_dist[key][_] = sim_dist
+                    sim_cos_ = torch.cosine_similarity(self.rela_q_sharing[key],self.rela_q_sharing[_],dim=0)
+                    self.rel_q_similarity_cos[key][_] = sim_cos
 
-        return self.rel_similarity_cos,self.rel_similarity_dist
+#         return self.rel_similarity_cos,self.rel_similarity_dist
+        return self.rel_similarity_cos,self.rel_q_similarity_cos
     
     def forward(self, task, iseval=False, curr_rel='', support_meta=None, istest=False):
         # transfer task string into embedding
@@ -239,6 +255,8 @@ class MetaR(nn.Module):
             for i in range(len(curr_rel)):
                 temp = torch.squeeze(rel[i])
                 self.rel_sharing[curr_rel[i]] = temp
+                temp_ = torch.squeeze(norm_vector[i])
+                self.hyper_sharing[curr_rel[i]] = temp_
 
         # relation for support
         rel_s = rel.expand(-1, few+num_sn, -1, -1)
@@ -274,8 +292,10 @@ class MetaR(nn.Module):
             norm_q = self.h_norm
         if not iseval:
             for i in range(len(curr_rel)):
-                temp = torch.squeeze(norm_q[i])
-                self.hyper_sharing[curr_rel[i]] = temp
+                temp = torch.squeeze(rel_q[i])
+                self.rela_q_sharing[curr_rel[i]] = temp
+                temp_ = torch.squeeze(norm_q[i])
+                self.hyper_q_sharing[curr_rel[i]] = temp_
                 
         p_score, n_score = self.embedding_learner(que_neg_e1, que_neg_e2, rel_q, num_q, norm_q)
 
