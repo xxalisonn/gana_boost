@@ -306,7 +306,7 @@ class Trainer:
                 rel_cos, rel_q_cos = self.metaR.get_rel_sim()
                 hyper_cos,hyper_q_cos = self.metaR.get_hyper_sim()
                 save_dic_tensor(rel_cos,'rel_cos'+str(e))
-                save_dic_tensor(hyper_cos,'rel_q_cos'+str(e))
+                save_dic_tensor(hyper_cos,'hyper_cos'+str(e))
 #                 save_dic_tensor(rel_dist,'rel_dist_'+str(e))
 #                 save_dic_tensor(hyper_dist,'hyper_dist'+str(e))
                 save_dic_tensor(rel_q_cos,'rel_q_cos'+str(e))
